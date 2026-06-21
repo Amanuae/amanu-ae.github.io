@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amu — Video Editor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #080808;
+      color: #e8e0d6;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      position: relative;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: -1;
+      background:
+        radial-gradient(ellipse at 50% 95%, rgba(255, 140, 0, 0.12) 0%, transparent 35%);
+      animation: pulse-glow 4s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    /* ====== TOP NAV ====== */
+    .top-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 24px 48px 0; height: 5vh; min-height: 44px;
+      pointer-events: none;
+    }
+    .top-nav .nav-brand {
+      font-family: 'Cinzel', serif;
+      font-size: 1.3rem; letter-spacing: 1px;
+      color: #b8943a; pointer-events: auto;
+    }
+    .top-nav .nav-portfolio {
+      font-family: 'Cinzel', serif;
+      font-size: 1.3rem; letter-spacing: 4px; text-transform: uppercase;
+      color: #999; pointer-events: auto;
+    }
+    .top-nav .nav-book {
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase;
+      color: #b8943a; background: none; border: 1px solid #b8943a; border-radius: 100px;
+      cursor: pointer; pointer-events: auto; transition: color 0.3s;
+      padding: 7px 20px;
+    }
+    .top-nav .nav-book:hover { color: #d4b04a; border-color: #d4b04a; background: rgba(255, 140, 0, 0.06); }
+
+    /* ====== LETTERBOX BARS ====== */
+    .letterbox-top, .letterbox-bottom {
+      position: fixed; left: 0; right: 0; z-index: 100;
+      background: #000; pointer-events: none;
+    }
+    .letterbox-top { top: 0; height: 5vh; }
+    .letterbox-bottom { bottom: 0; height: 5vh; }
+
+    /* ====== CINEMATIC HERO ====== */
+    .hero-cinema {
+      min-height: 100vh; display: flex; flex-direction: column;
+      justify-content: flex-start; align-items: center; text-align: center;
+      position: relative; z-index: 0;
+      padding: 15vh 24px 2vh;
+    }
+    .hero-cinema::before {
+      content: ''; position: absolute; inset: 0;
+      z-index: -1;
+      background:
+        radial-gradient(ellipse at 50% 40%, #1a1410 0%, transparent 60%),
+        radial-gradient(ellipse at 50% 80%, #0d0d0d 0%, transparent 40%),
+        linear-gradient(180deg, #080808 0%, #0a0808 100%);
+      pointer-events: none;
+    }
+
+    .hero-cinema .cinema-label {
+      font-size: 0.6rem; font-weight: 400; letter-spacing: 6px;
+      text-transform: uppercase; color: #555; position: relative;
+    }
+    .hero-cinema .status-badge {
+      position: relative; z-index: 10;
+      display: inline-block;
+      padding: 8px 24px; border: 1px solid #b8943a; border-radius: 100px;
+      font-size: 0.7rem; letter-spacing: 2px;
+      color: #faf8f5; margin-bottom: 28px; background: transparent;
+      font-weight: 600; line-height: 1.4;
+    }
+    .hero-cinema .status-badge:hover {
+      background: rgba(255, 140, 0, 0.06);
+    }
+    .hero-cinema .status-badge .dot {
+      display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+      background: #ff8c00; box-shadow: 0 0 12px rgba(255, 140, 0, 0.8), 0 0 24px rgba(255, 140, 0, 0.3);
+      animation: pulse-dot 1.5s ease-in-out infinite;
+      margin-right: 9px; vertical-align: middle;
+    }
+    .hero-cinema .status-badge .badge-text {
+      vertical-align: middle;
+    }
+    @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .hero-cinema .cinema-label::before, .hero-cinema .cinema-label::after {
+      content: ''; display: inline-block; width: 40px; height: 1px;
+      background: #333; vertical-align: middle; margin: 0 16px;
+    }
+    .hero-cinema h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(2rem, 5vw, 4rem); font-weight: 700;
+      letter-spacing: 4px; text-transform: uppercase;
+      color: #e8e0d6; margin-top: 20px; position: relative;
+    }
+    .hero-cinema h1 span {
+      display: block;
+      font-size: clamp(0.85rem, 1.5vw, 1.2rem);
+      font-weight: 400; letter-spacing: 8px;
+      color: #b8943a; margin-top: 12px;
+    }
+    .hero-cinema .cinema-tagline {
+      font-size: clamp(0.8rem, 1vw, 0.95rem); font-weight: 300;
+      color: #777; max-width: 480px; margin-top: 24px; position: relative;
+    }
+    .hero-cinema .cinema-cta {
+      margin-top: 48px; position: relative;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 48px; height: 48px; border: 1.5px solid #b8943a; border-radius: 50%;
+      color: #b8943a; transition: all 0.4s ease;
+    }
+    .hero-cinema .cinema-cta:hover {
+      background: rgba(255, 140, 0, 0.06);
+    }
+    .hero-cinema .cinema-cta svg { width: 20px; height: 20px; }
+    .hero-cinema .cinema-hero-text {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.2rem, 2.2vw, 1.6rem); font-weight: 700;
+      letter-spacing: 3px; color: #e8e0d6;
+      margin-top: 4px; position: relative;
+    }
+    .hero-cinema .services-inside {
+      display: grid; grid-template-columns: repeat(3, 260px); gap: 48px;
+      margin-top: 24px; place-items: center;
+    }
+    .hero-cinema .service-card {
+      width: 260px; aspect-ratio: 1;
+      border: 1px solid rgba(184, 148, 58, 0.3); border-radius: 16px;
+      padding: 28px 20px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: all 0.4s ease;
+    }
+    .hero-cinema .service-card:hover {
+      border-color: #b8943a; transform: translateY(-3px);
+      background: rgba(255, 140, 0, 0.06);
+    }
+    .service-icon {
+      width: 48px; height: 48px;
+      border: 1.5px solid rgba(184, 148, 58, 0.4); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px; flex-shrink: 0;
+    }
+    .service-icon .icon-emoji {
+      font-size: 18px; line-height: 1; color: #b8943a;
+    }
+    .service-icon svg {
+      width: 24px; height: 24px; color: #b8943a;
+    }
+    .hero-cinema .service-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.1rem; letter-spacing: 2px; text-transform: uppercase;
+      color: #b8943a; margin-bottom: 12px;
+    }
+    .hero-cinema .service-desc {
+      font-size: 1rem; line-height: 1.6; color: #f5f2ec;
+    }
+    .hero-cinema .horiz-line {
+      width: 100%; height: 1px;
+      background: rgba(184, 148, 58, 0.25); margin: 60px 0 12px;
+    }
+    .hero-cinema .cinema-whatido {
+      font-family: 'Cinzel', serif;
+      font-size: 0.8rem; letter-spacing: 4px; text-transform: uppercase; color: #e8e0d6;
+    }
+
+    /* ====== FILMSTRIP PORTFOLIO ====== */
+    .filmstrip-section {
+      padding: 60px 0 80px; border-top: 1px solid rgba(184, 148, 58, 0.25);
+      background: transparent; overflow: hidden;
+    }
+    .filmstrip-header {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 0 40px 40px; gap: 16px;
+    }
+    .filmstrip-header .fs-label {
+      font-size: 0.8rem; letter-spacing: 4px; text-transform: uppercase; color: #e8e0d6;
+      font-family: 'Cinzel', serif; text-align: center;
+    }
+    .filmstrip-header h2 {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700;
+      letter-spacing: 3px; text-transform: uppercase; color: #e8e0d6;
+      text-align: center;
+    }
+    .filmstrip-header .fs-filter {
+      display: flex; gap: 16px;
+    }
+    .filmstrip-header .fs-filter button {
+      background: none; border: none; font-family: 'Cinzel', serif;
+      font-size: 0.6rem; font-weight: 500; letter-spacing: 2px;
+      text-transform: uppercase; color: #999; cursor: pointer;
+      transition: color 0.3s; padding: 0;
+    }
+    .filmstrip-header .fs-filter button:hover { color: #b8943a; }
+    .filmstrip-header .fs-filter button.active { color: #b8943a; }
+
+    .filmstrip-track-wrap { position: relative; }
+    .filmstrip-track-wrap .fade-edge {
+      position: absolute; top: 0; bottom: 0; left: 0; width: 60px;
+      background: linear-gradient(to right, #050505 0%, transparent 100%);
+      z-index: 2; pointer-events: none;
+    }
+    .filmstrip-track-wrap .fade-edge.right { left: auto; right: 0; background: linear-gradient(to left, #050505 0%, transparent 100%); }
+
+    .filmstrip-track {
+      display: flex; gap: 24px; overflow-x: auto; padding: 20px 60px;
+      justify-content: center;
+    }
+    .filmstrip-track::-webkit-scrollbar { height: 3px; }
+    .filmstrip-track::-webkit-scrollbar-track { background: #111; }
+    .filmstrip-track::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    .filmstrip-track--long { gap: 16px; padding: 10px 60px; }
+    .filmstrip-track--long .film-frame { flex: 0 0 400px; padding: 4px 6px; }
+    .filmstrip-track--long .film-frame .frame-number { font-size: 0.6rem; margin-bottom: 3px; }
+
+    .film-frame {
+      flex: 0 0 580px; position: relative; cursor: pointer;
+      scroll-snap-align: start; padding: 8px 10px;
+      display: flex; flex-direction: column;
+      background: transparent;
+      transition: transform 0.4s ease;
+    }
+    .film-frame:hover { transform: scale(1.02); z-index: 3; }
+    .film-frame .frame-inner {
+      position: relative; aspect-ratio: 16 / 9; overflow: hidden;
+      background: #111; border: 1px solid #1a1a1a; border-radius: 8px;
+    }
+    .film-frame:hover .frame-inner {
+      border-color: #b8943a;
+    }
+    .film-frame .frame-inner img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: opacity 0.4s ease;
+    }
+    .film-frame .frame-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%);
+      opacity: 0; transition: opacity 0.4s ease;
+      display: flex; align-items: flex-end; padding: 16px;
+    }
+    .film-frame:hover .frame-overlay { opacity: 1; }
+    .film-frame .frame-overlay .play-indicator {
+      font-size: 0.55rem; letter-spacing: 2px; text-transform: uppercase;
+      color: #b8943a; border-bottom: 1px solid rgba(185,148,58,0.3); padding-bottom: 2px;
+    }
+    .film-frame .frame-number {
+      font-size: 0.85rem; color: #b8943a; font-family: monospace;
+      letter-spacing: 2px; margin-bottom: 6px; font-weight: 700;
+    }
+    .film-frame .frame-info {
+      padding: 12px 4px 4px;
+    }
+    .film-frame .frame-info .fi-title {
+      font-size: 0.8rem; font-weight: 500; color: #e8e0d6;
+    }
+    .film-frame .frame-info .fi-sub {
+      font-size: 0.65rem; color: #555; margin-top: 2px;
+    }
+
+    .filmstrip-empty {
+      display: none; flex: 0 0 100%; text-align: center;
+      padding: 80px 20px; color: #666; font-size: 0.8rem;
+    }
+    .filmstrip-empty.active { display: block; }
+    .filmstrip-empty .empty-icon { font-size: 2rem; margin-bottom: 12px; color: #b8943a; }
+    .filmstrip-empty .empty-title { font-size: 1rem; color: #e8e0d6; font-weight: 600; letter-spacing: 2px; }
+    .filmstrip-empty .empty-sub { font-size: 0.75rem; color: #999; margin-top: 6px; }
+
+    /* ====== FOOTER ====== */
+    footer {
+      padding: 40px 40px; text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+    }
+    footer .footer-socials {
+      display: flex; gap: 24px;
+    }
+    footer .footer-socials a {
+      display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border: 1px solid #b8943a; border-radius: 50%;
+      color: #ccc; transition: all 0.3s ease;
+    }
+    footer .footer-socials a:hover {
+      color: #b8943a; border-color: #b8943a; transform: translateY(-2px);
+      background: rgba(255, 140, 0, 0.06);
+    }
+    footer .footer-socials a svg { width: 16px; height: 16px; fill: currentColor; }
+    footer .footer-book {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem; letter-spacing: 4px; text-transform: uppercase;
+      color: #b8943a;
+    }
+    .hero-cinema .footer-stats {
+      font-family: 'Cinzel', serif;
+      font-size: 0.6rem; letter-spacing: 3px; text-transform: uppercase; color: #999;
+      margin-top: 140px; text-align: center; padding-left: 12px;
+    }
+    footer .footer-copy {
+      font-size: 0.5rem; letter-spacing: 2px; text-transform: uppercase; color: #333;
+    }
+
+    @media (max-width: 900px) {
+      .letterbox-top, .letterbox-bottom { height: 2vh; }
+      .hero-cinema { padding: 12vh 20px 12vh; }
+      .hero-cinema h1 { letter-spacing: 3px; }
+      .hero-cinema h1 span { letter-spacing: 6px; }
+      .cinema-socials { display: none; }
+      .filmstrip-track { padding: 12px 16px; }
+      .film-frame { flex: 0 0 280px; }
+      .filmstrip-header { padding: 0 16px 24px; }
+    }
+    @media (max-width: 640px) {
+      .hero-cinema .cinema-label::before, .hero-cinema .cinema-label::after { width: 20px; margin: 0 8px; }
+      .hero-cinema .cinema-cta { width: 48px; height: 48px; }
+      .film-frame { flex: 0 0 240px; }
+      .filmstrip-header h2 { font-size: 1rem; }
+      footer { gap: 16px; padding: 24px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="top-nav">
+    <span class="nav-brand">Amanu_ae</span>
+    <span class="nav-portfolio">Portfolio</span>
+    <button class="nav-book" onclick="document.getElementById('footer').scrollIntoView({behavior:'smooth'})">Book Now</button>
+  </nav>
+  <div class="letterbox-top"></div>
+  <div class="letterbox-bottom"></div>
+
+  <section class="hero-cinema" id="top">
+    <div class="status-badge"><span class="dot"></span><span class="badge-text">Available for new Projects</span></div>
+    <span class="cinema-label">Professional Video Editor</span>
+    <h1>
+      Amanu_ae
+      <span>Attention IS Earned. I Edit For It.</span>
+    </h1>
+    <p class="cinema-tagline">2.5+ years of professional video editing — built to hook, retain and convert.</p>
+    <a href="#services" class="cinema-cta">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
+      </svg>
+    </a>
+    <div class="horiz-line"></div>
+    <span class="cinema-whatido">What I do</span>
+    <span class="cinema-hero-text">Everything your video needs, in one place.</span>
+    <div class="services-inside" id="services">
+      <div class="service-card">
+        <div class="service-icon">
+          <span class="icon-emoji">&#9986;</span>
+        </div>
+        <div class="service-title">Short-Form Edits</div>
+        <div class="service-desc">Reels, Tiktoks and Shorts cut for retention from the first frame.</div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="5" width="14" height="14" rx="3"/>
+            <polygon points="10 8 16 12 10 16" fill="currentColor" stroke="none"/>
+          </svg>
+        </div>
+        <div class="service-title">Long-Form Edits</div>
+        <div class="service-desc">Story-driven pacing that holds attention across longer runtimes.</div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 16v-4a7 7 0 0 1 14 0v4"/>
+            <path d="M19 17a1.5 1.5 0 0 1-1.5 1.5h-1a1.5 1.5 0 0 1-1.5-1.5v-2.5a1.5 1.5 0 0 1 1.5-1.5h2.5zM5 17a1.5 1.5 0 0 0 1.5 1.5h1a1.5 1.5 0 0 0 1.5-1.5v-2.5a1.5 1.5 0 0 0-1.5-1.5H5z"/>
+          </svg>
+        </div>
+        <div class="service-title">Sound Design</div>
+        <div class="service-desc">Clean dialogue, punchy SFX, and music that sits right under the cut.</div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 7 17 12 12 17 7 12" fill="#b8943a" stroke="currentColor"/>
+          </svg>
+        </div>
+        <div class="service-title">Motion Graphics</div>
+        <div class="service-desc">Custom titles and lower-thirds that match your brand, not a template.</div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="7"/>
+            <path d="M12 5a7 7 0 0 0 0 14z" fill="#b8943a" stroke="none"/>
+          </svg>
+        </div>
+        <div class="service-title">Color Grading</div>
+        <div class="service-desc">A consistent, premium look across every piece of content.</div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="7" width="16" height="10" rx="2"/><line x1="7" y1="10" x2="17" y2="10"/><line x1="7" y1="13" x2="13" y2="13"/>
+          </svg>
+        </div>
+        <div class="service-title">Captions</div>
+        <div class="service-desc">Styled, on-brand captions built for sound-off viewing.</div>
+      </div>
+    </div>
+    <div class="footer-stats">
+      <span>2.5+ Years — Professional Video Editor</span>
+    </div>
+  </section>
+
+  <section class="filmstrip-section" id="filmstrip">
+    <div class="filmstrip-header">
+      <div>
+        <div class="fs-label">Portfolio</div>
+        <h2>Featured Work</h2>
+      </div>
+      <div class="fs-filter">
+        <button class="active" data-category="short">Short Form</button>
+        <button data-category="long">Long Form</button>
+      </div>
+    </div>
+    <div class="filmstrip-track-wrap">
+      <div class="fade-edge"></div>
+      <div class="fade-edge right"></div>
+      <div class="filmstrip-track" id="filmTrack">
+        <div class="filmstrip-empty" id="filmEmpty">
+          <span>— no frames in this reel —</span>
+        </div>
+      </div>
+    </div>
+    <div class="filmstrip-track-wrap">
+      <div class="fade-edge"></div>
+      <div class="fade-edge right"></div>
+      <div class="filmstrip-track filmstrip-track--long" id="filmTrackLong"></div>
+    </div>
+  </section>
+
+  <footer id="footer">
+    <span class="footer-book">Book Now</span>
+    <div class="footer-socials">
+      <a href="https://t.me/Amanu_k" target="_blank" rel="noopener" title="Telegram">
+        <svg viewBox="0 0 24 24"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 11.96c-1.04-.33-1.07-1.04.23-1.54l17.26-6.67c.87-.33 1.7.21 1.37 1.5l-2.92 13.75c-.2.93-.74 1.16-1.5.72l-4.14-3.05-2 1.93c-.23.23-.42.42-.83.42z"/></svg>
+      </a>
+      <a href="#" onclick="navigator.clipboard.writeText('amanuuuu');alert('Copied!');return false;" title="Discord: amanuuuu">
+        <svg viewBox="0 0 24 24"><path d="M20.317 4.369a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+      </a>
+      <a href="https://www.tiktok.com/@amanu_ae" target="_blank" rel="noopener" title="TikTok">
+        <svg viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+      </a>
+      <a href="https://www.instagram.com/amanu_k_" target="_blank" rel="noopener" title="Instagram">
+        <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+      </a>
+    </div>
+    <span class="footer-copy">&copy; 2026 Amanu_ae</span>
+  </footer>
+
+  <script>
+    (function() {
+      var videos = [
+        { id: 'Ku4MfgkDp5k', title: 'Video One', subtitle: 'Short Form', thumbnail: 'https://img.youtube.com/vi/Ku4MfgkDp5k/maxresdefault.jpg', category: 'short' },
+        { id: 'zZgYBU_vCwM', title: 'Video Two', subtitle: 'Short Form', thumbnail: 'https://img.youtube.com/vi/zZgYBU_vCwM/maxresdefault.jpg', category: 'short' },
+        { id: 'MpqSHoqMq4c', title: 'Video Three', subtitle: 'Long Form', thumbnail: 'https://img.youtube.com/vi/MpqSHoqMq4c/maxresdefault.jpg', category: 'long' },
+        { id: 'oa5iE_okp5M', title: 'Video Four', subtitle: 'Long Form', thumbnail: 'https://img.youtube.com/vi/oa5iE_okp5M/maxresdefault.jpg', category: 'long' }
+      ];
+
+      var trackShort = document.getElementById('filmTrack');
+      var trackLong = document.getElementById('filmTrackLong');
+      var empty = document.getElementById('filmEmpty');
+      var frames = [];
+
+      function renderTrack(trackEl, category) {
+        trackEl.innerHTML = '';
+        var filtered = videos.filter(function(v) { return v.category === category; });
+        filtered.forEach(function(video, i) {
+          var frame = document.createElement('div');
+          frame.className = 'film-frame';
+          frame.dataset.index = videos.indexOf(video);
+          frame.innerHTML =
+            '<div class="frame-number">' + String(i + 1).padStart(2, '0') + '</div>' +
+            '<div class="frame-inner">' +
+              '<img src="' + video.thumbnail + '" alt="' + video.title + '" loading="lazy">' +
+              '<div class="frame-overlay"><span class="play-indicator">&#9655; Play</span></div>' +
+            '</div>';
+          trackEl.appendChild(frame);
+          frames.push(frame);
+        });
+      }
+
+      renderTrack(trackShort, 'short');
+      renderTrack(trackLong, 'long');
+
+      [trackShort, trackLong].forEach(function(t) {
+        t.addEventListener('click', function(e) {
+          var frame = e.target.closest('.film-frame');
+          if (frame) {
+            var idx = parseInt(frame.dataset.index);
+            if (videos[idx]) {
+              window.open('https://www.youtube.com/watch?v=' + videos[idx].id, '_blank');
+            }
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
